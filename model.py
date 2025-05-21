@@ -85,7 +85,8 @@ def extract_features(url):
     return features
 
 # Load the dataset
-df = pd.read_csv('dataset_phishing.csv')
+script_dir = os.path.dirname(os.path.abspath(__file__))
+df = pd.read_csv(os.path.join(script_dir, 'dataset_phishing.csv'))
 
 # Selecting relevant features (excluding 'url' and keeping numerical features)
 feature_columns = [col for col in df.columns if col not in ['url', 'status']]
@@ -109,13 +110,14 @@ print("\nClassification Report:")
 print(classification_report(y_test, y_pred, target_names=['Legitimate', 'Phishing']))
 
 # Save the model and feature names for future use
-if not os.path.exists('models'):
-    os.makedirs('models')
+models_dir = os.path.join(script_dir, 'models')
+if not os.path.exists(models_dir):
+    os.makedirs(models_dir)
     
-with open('models/phishing_model.pkl', 'wb') as f:
+with open(os.path.join(models_dir, 'phishing_model.pkl'), 'wb') as f:
     pickle.dump(model, f)
     
-with open('models/feature_names.pkl', 'wb') as f:
+with open(os.path.join(models_dir, 'feature_names.pkl'), 'wb') as f:
     pickle.dump(X.columns.tolist(), f)
 
 # Function to predict if a new URL is phishing or legitimate
@@ -125,14 +127,14 @@ def predict_url(url):
         features_dict = extract_features(url)
         
         # Get the feature names in the correct order
-        with open('models/feature_names.pkl', 'rb') as f:
+        with open(os.path.join(script_dir, 'models', 'feature_names.pkl'), 'rb') as f:
             feature_names = pickle.load(f)
         
         # Create a DataFrame with the features in the correct order
         features_df = pd.DataFrame([{name: features_dict.get(name, 0) for name in feature_names}])
         
         # Load the model
-        with open('models/phishing_model.pkl', 'rb') as f:
+        with open(os.path.join(script_dir, 'models', 'phishing_model.pkl'), 'rb') as f:
             loaded_model = pickle.load(f)
         
         # Make prediction
